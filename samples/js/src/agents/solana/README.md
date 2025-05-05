@@ -1,4 +1,4 @@
-# ⚡ Solana Agent
+# ⚡ Quicknode Agent
 
 This is a lightweight A2A-compatible agent that queries the Solana blockchain using QuickNode RPC. It can respond to user questions like checking current slot or wallet balance.
 
@@ -9,6 +9,6 @@ This is a lightweight A2A-compatible agent that queries the Solana blockchain us
 1. Set your environment variables:
 
 ```bash
-export HEURIST_API_KEY=<your_gemini_api_key>
+export HEURIST_API_KEY=<your_heurist_api_key>
 export SOLANA_RPC_URL=https://your-quicknode-endpoint/
 ```
