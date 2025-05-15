@@ -1,17 +1,17 @@
 import { duneClient } from "./dune.js";
 
 const queryMap = {
-  LaunchLab: 5126416,
-  LetsBonk: 5126361,
-  Pumpfun: 5041379,
-  Boop: 5073810,
+  LaunchLab: 5002608,
+  LetsBonk: 5126485,
+  Pumpfun: 4007266,
+  Boop: 5073823,
 };
 
 const labelMap: Record<string, string> = {
-  LaunchLab: "LaunchLab Graduates",
-  LetsBonk: "LetsBonk Graduates",
-  Pumpfun: "Pumpfun Graduates",
-  Boop: "Boop Graduates",
+  LaunchLab: "LaunchLab",
+  LetsBonk: "LetsBonk",
+  Pumpfun: "Pumpfun",
+  Boop: "Boop",
 };
 
 interface QueryResult {
@@ -50,7 +50,7 @@ export async function fetchDuneQueryResult(
   }
 }
 
-export async function fetchGraduates(limit = 1): Promise<QueryResult[]> {
+export async function fetchActiveAddress(limit = 1): Promise<QueryResult[]> {
   const entries = Object.entries(queryMap);
   return await Promise.all(
     entries.map(([label, queryId]) =>

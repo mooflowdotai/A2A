@@ -4,8 +4,8 @@ import { duneClient } from "./dune.js";
 const queryMap: Record<number, string> = {
   5001416: "LaunchLab Tokens",
   5126341: "LetsBonk Tokens",
-  4006260: "Pumpfun tokens",
-  5073803: "Boop tokens",
+  4006260: "Pumpfun Tokens",
+  5073803: "Boop Tokens",
 };
 
 interface QueryResult {

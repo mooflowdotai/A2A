@@ -1,4 +1,5 @@
 import { ai, z } from "./genkit.js";
+import { fetchActiveAddress } from "./services/active_address.js";
 import { fetchGraduates } from "./services/graduates.js";
 import {
   fetchDexMetrics,
@@ -85,6 +86,26 @@ export const getTotalTokensCreatedByPlatform = ai.defineTool(
     const tokenResults = await fetchTokens24h(1);
 
     const breakdown = tokenResults.map(({ label, rows }) => {
+      return { platform: label, data: rows?.[0] };
+    });
+
+    return {
+      breakdown,
+    };
+  }
+);
+
+export const getActiveAddressesByPlatform = ai.defineTool(
+  {
+    name: "get_active_addresses",
+    description:
+      "Return the number of active addresses on Solana in the last 24 hours, grouped by platform. Includes LaunchLab, Pumpfun, LetsBonk, Boop, and others if available.",
+    inputSchema: z.object({}),
+  },
+  async () => {
+    const addressResults = await fetchActiveAddress(1);
+
+    const breakdown = addressResults.map(({ label, rows }) => {
       return { platform: label, data: rows?.[0] };
     });
 
