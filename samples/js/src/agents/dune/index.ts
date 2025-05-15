@@ -10,8 +10,6 @@ import {
   getDexPairMetrics,
   getTokenPairsLiquidity,
   getSvmTokenBalances,
-  getEigenlayerAvsMetrics,
-  getEigenlayerOperatorMetrics,
   getGraduates,
   getTokens24h,
 } from "./tools.js";
@@ -69,8 +67,6 @@ export async function* duneAgentHandler(
           getDexPairMetrics,
           getTokenPairsLiquidity,
           getSvmTokenBalances,
-          getEigenlayerAvsMetrics,
-          getEigenlayerOperatorMetrics,
           getGraduates,
           getTokens24h,
         ],
@@ -123,7 +119,8 @@ const duneAgentCard: schema.AgentCard = {
       examples: [
         "Show me the top Solana token pairs by liquidity.",
         "What tokens does 3aH1...XYZ hold?",
-        "Get operator stats for AVS 'EigenDA'",
+        "Get graduates in the last 24 hours on solana",
+        "Get tokens created in the last 24 hours on solana",
       ],
     },
   ],

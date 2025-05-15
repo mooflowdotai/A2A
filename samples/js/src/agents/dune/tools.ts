@@ -4,8 +4,6 @@ import {
   fetchDexMetrics,
   fetchTopTokenPairByChain,
   fetchSVMTokenBalance,
-  fetchAvsMetrics,
-  fetchOperatorMetrics,
 } from "./services/index.js";
 import { fetchTokens24h } from "./services/last_24h.js";
 
@@ -61,43 +59,11 @@ export const getSvmTokenBalances = ai.defineTool(
   }
 );
 
-// --- Eigenlayer: Get AVS-level stats ---
-export const getEigenlayerAvsMetrics = ai.defineTool(
-  {
-    name: "get_eigenlayer_avs_metrics",
-    description: "Get staking and operator metrics for a specific AVS",
-    inputSchema: z.object({
-      avs_name: z.string().describe("The name of the AVS to query"),
-    }),
-  },
-  async ({ avs_name }) => {
-    const metrics = await fetchAvsMetrics(avs_name);
-    return { metrics };
-  }
-);
-
-// --- Eigenlayer: Get operator metrics for an AVS ---
-export const getEigenlayerOperatorMetrics = ai.defineTool(
-  {
-    name: "get_eigenlayer_operator_metrics",
-    description: "Get the stats for all operators in a specific AVS",
-    inputSchema: z.object({
-      avs_name: z
-        .string()
-        .describe("The name of the AVS to get operator stats for"),
-    }),
-  },
-  async ({ avs_name }) => {
-    const metrics = await fetchOperatorMetrics(avs_name);
-    return { avs_name, metrics };
-  }
-);
-
 // --- Get Graduates from the last 24 hours ---
 export const getGraduates = ai.defineTool(
   {
     name: "get_graduates",
-    description: "Get graduates in the last 24 hours",
+    description: "Get graduates in the last 24 hours on solana",
     inputSchema: z.object({}),
   },
   async () => {
@@ -111,7 +77,7 @@ export const getGraduates = ai.defineTool(
 export const getTokens24h = ai.defineTool(
   {
     name: "get_tokens_24h",
-    description: "Get tokens created in the last 24 hours",
+    description: "Get tokens created in the last 24 hours on solana",
     inputSchema: z.object({}),
   },
   async () => {
