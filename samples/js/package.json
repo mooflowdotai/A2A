@@ -12,7 +12,8 @@
     "a2a:cli": "npx tsx src/cli.ts",
     "agents:movie-agent": "npx tsx src/agents/movie-agent/index.ts",
     "agents:coder": "npx tsx src/agents/coder/index.ts",
-    "agents:solana": "npx tsx src/agents/solana/index.ts"
+    "agents:solana": "npx tsx src/agents/solana/index.ts",
+    "agents:dune": "npx tsx src/agents/dune/index.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.4.0",
@@ -20,6 +21,7 @@
     "@quicknode/sdk": "^2.4.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
+    "axios": "^1.9.0",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
