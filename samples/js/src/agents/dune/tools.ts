@@ -63,12 +63,12 @@ export const getSvmTokenBalances = ai.defineTool(
 export const getGraduates = ai.defineTool(
   {
     name: "get_graduates",
-    description: "Get graduates in the last 24 hours on solana",
+    description:
+      "Return a breakdown of the number of tokens created on Solana in the last 24 hours, grouped by launchpad (LaunchLab, LetsBonk, Pumpfun, Boop)",
     inputSchema: z.object({}),
   },
   async () => {
     const graduates = await fetchGraduates();
-
     return { graduates };
   }
 );
@@ -77,12 +77,12 @@ export const getGraduates = ai.defineTool(
 export const getTokens24h = ai.defineTool(
   {
     name: "get_tokens_24h",
-    description: "Get tokens created in the last 24 hours on solana",
+    description:
+      "Return the total number of tokens created on Solana in the last 24 hours across all launchpads and creators",
     inputSchema: z.object({}),
   },
   async () => {
     const tokens24hCount = await fetchTokens24h(1);
-
     return { tokens24hCount };
   }
 );
