@@ -101,7 +101,7 @@ export async function* duneAgentHandler(
 }
 
 const duneAgentCard: schema.AgentCard = {
-  name: "Dune Agent",
+  name: "MOOF Dune Agent",
   description: "Query blockchain data using Dune Analytics APIs.",
   url: "http://0.0.0.0:10000",
   provider: { organization: "Dune Agents" },
