@@ -1,4 +1,5 @@
 import { ai, z } from "./genkit.js";
+import { fetchGraduates } from "./services/graduates.js";
 import {
   fetchDexMetrics,
   fetchTopTokenPairByChain,
@@ -6,6 +7,7 @@ import {
   fetchAvsMetrics,
   fetchOperatorMetrics,
 } from "./services/index.js";
+import { fetchTokens24h } from "./services/last_24h.js";
 
 // --- DEX: Get metrics for a token pair ---
 export const getDexPairMetrics = ai.defineTool(
@@ -88,5 +90,33 @@ export const getEigenlayerOperatorMetrics = ai.defineTool(
   async ({ avs_name }) => {
     const metrics = await fetchOperatorMetrics(avs_name);
     return { avs_name, metrics };
+  }
+);
+
+// --- Get Graduates from the last 24 hours ---
+export const getGraduates = ai.defineTool(
+  {
+    name: "get_graduates",
+    description: "Get graduates in the last 24 hours",
+    inputSchema: z.object({}),
+  },
+  async () => {
+    const graduates = await fetchGraduates();
+
+    return { graduates };
+  }
+);
+
+// --- Get Graduates from the last 24 hours ---
+export const getTokens24h = ai.defineTool(
+  {
+    name: "get_tokens_24h",
+    description: "Get tokens created in the last 24 hours",
+    inputSchema: z.object({}),
+  },
+  async () => {
+    const tokens24hCount = await fetchTokens24h(1);
+
+    return { tokens24hCount };
   }
 );

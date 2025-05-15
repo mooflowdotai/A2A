@@ -12,6 +12,8 @@ import {
   getSvmTokenBalances,
   getEigenlayerAvsMetrics,
   getEigenlayerOperatorMetrics,
+  getGraduates,
+  getTokens24h,
 } from "./tools.js";
 
 if (!process.env.DUNE_API_KEY) {
@@ -69,6 +71,8 @@ export async function* duneAgentHandler(
           getSvmTokenBalances,
           getEigenlayerAvsMetrics,
           getEigenlayerOperatorMetrics,
+          getGraduates,
+          getTokens24h,
         ],
       }
     );
