@@ -125,6 +125,8 @@ const duneAgentCard: schema.AgentCard = {
   ],
 };
 
-const server = new A2AServer(duneAgentHandler, { card: duneAgentCard });
-server.start();
+const server = new A2AServer(duneAgentHandler, {
+  card: duneAgentCard,
+});
+server.start(10000);
 console.log("[DuneAgent] Running at http://0.0.0.0:10000");
