@@ -130,7 +130,7 @@ export const getTopTokensLaunched = ai.defineTool(
     }),
   },
   async ({ timeframe = "24h" }) => {
-    const queryId = timeframe === "24h" ? 5073823 : 5138002;
+    const queryId = timeframe === "24h" ? 5137851 : 5138002;
 
     const response = await duneClient.get(`/v1/query/${queryId}/results`, {
       params: { limit: 10 },
