@@ -64,7 +64,7 @@ export const getGraduates = ai.defineTool(
   {
     name: "get_graduates",
     description:
-      "Return a breakdown of the number of tokens created on Solana in the last 24 hours, grouped by launchpad (LaunchLab, LetsBonk, Pumpfun, Boop)",
+      "Return a breakdown of tokens launched (graduated) on Solana in the last 24 hours, grouped by launch platform such as LaunchLab, LetsBonk, Pumpfun, and Boop. Each entry represents tokens that were successfully created and deployed via these launchpads.",
     inputSchema: z.object({}),
   },
   async () => {
@@ -73,16 +73,23 @@ export const getGraduates = ai.defineTool(
   }
 );
 
-// --- Get Graduates from the last 24 hours ---
-export const getTokens24h = ai.defineTool(
+// --- Get total tokens created on Solana in the last 24 hours ---
+export const getTotalTokensCreatedByPlatform = ai.defineTool(
   {
-    name: "get_tokens_24h",
+    name: "get_total_tokens_created_by_platform",
     description:
-      "Return the total number of tokens created on Solana in the last 24 hours across all launchpads and creators",
+      "Return the total number of tokens created on Solana in the last 24 hours, along with a breakdown by platform. This includes all tokens launched via platforms such as LaunchLab, Pumpfun, LetsBonk, and Boop.",
     inputSchema: z.object({}),
   },
   async () => {
-    const tokens24hCount = await fetchTokens24h(1);
-    return { tokens24hCount };
+    const tokenResults = await fetchTokens24h(1);
+
+    const breakdown = tokenResults.map(({ label, rows }) => {
+      return { platform: label, data: rows?.[0] };
+    });
+
+    return {
+      breakdown,
+    };
   }
 );

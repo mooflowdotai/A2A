@@ -11,7 +11,7 @@ import {
   getTokenPairsLiquidity,
   getSvmTokenBalances,
   getGraduates,
-  getTokens24h,
+  getTotalTokensCreatedByPlatform,
 } from "./tools.js";
 
 if (!process.env.DUNE_API_KEY) {
@@ -68,7 +68,7 @@ export async function* duneAgentHandler(
           getTokenPairsLiquidity,
           getSvmTokenBalances,
           getGraduates,
-          getTokens24h,
+          getTotalTokensCreatedByPlatform,
         ],
       }
     );
