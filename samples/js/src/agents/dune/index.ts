@@ -99,7 +99,7 @@ export async function* duneAgentHandler(
 const duneAgentCard: schema.AgentCard = {
   name: "Dune Agent",
   description: "Query blockchain data using Dune Analytics APIs.",
-  url: "http://0.0.0.0:41241",
+  url: "http://0.0.0.0:10000",
   provider: { organization: "Dune Agents" },
   version: "0.1.0",
   capabilities: {
@@ -127,4 +127,4 @@ const duneAgentCard: schema.AgentCard = {
 
 const server = new A2AServer(duneAgentHandler, { card: duneAgentCard });
 server.start();
-console.log("[DuneAgent] Running at http://0.0.0.0:41241");
+console.log("[DuneAgent] Running at http://0.0.0.0:10000");
