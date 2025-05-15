@@ -13,6 +13,7 @@ import {
   getGraduates,
   getTotalTokensCreatedByPlatform,
   getActiveAddressesByPlatform,
+  getTopTokensLaunched,
 } from "./tools.js";
 
 if (!process.env.DUNE_API_KEY) {
@@ -71,6 +72,7 @@ export async function* duneAgentHandler(
           getGraduates,
           getTotalTokensCreatedByPlatform,
           getActiveAddressesByPlatform,
+          getTopTokensLaunched,
         ],
       }
     );
@@ -121,8 +123,16 @@ const duneAgentCard: schema.AgentCard = {
       examples: [
         "Show me the top Solana token pairs by liquidity.",
         "What tokens does 3aH1...XYZ hold?",
-        "Get graduates in the last 24 hours on solana",
-        "Get tokens created in the last 24 hours on solana",
+        "Get graduates in the last 24 hours on Solana.",
+        "Get tokens created in the last 24 hours on Solana.",
+        "How many tokens did LaunchLab launch today?",
+        "How many tokens were created on Solana by Pumpfun?",
+        "Show top tokens launched in the last 7 days.",
+        "How many active addresses did LetsBonk have in the past 24 hours?",
+        "Get a breakdown of token launches by platform.",
+        "Which launchpad created the most tokens today?",
+        "What are the trending tokens newly launched on Solana?",
+        "Total number of tokens deployed across all Solana launchpads in the last 24 hours.",
       ],
     },
   ],

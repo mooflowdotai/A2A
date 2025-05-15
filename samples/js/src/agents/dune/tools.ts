@@ -1,5 +1,6 @@
 import { ai, z } from "./genkit.js";
 import { fetchActiveAddress } from "./services/active_address.js";
+import { duneClient } from "./services/dune.js";
 import { fetchGraduates } from "./services/graduates.js";
 import {
   fetchDexMetrics,
@@ -111,6 +112,35 @@ export const getActiveAddressesByPlatform = ai.defineTool(
 
     return {
       breakdown,
+    };
+  }
+);
+
+export const getTopTokensLaunched = ai.defineTool(
+  {
+    name: "get_top_tokens_launched",
+    description:
+      "Return a list of the top tokens on Solana based on recent launches. Defaults to tokens launched in the last 24 hours, but can also return tokens from the last 7 days. Use this to explore trending or newly created tokens.",
+    inputSchema: z.object({
+      timeframe: z
+        .enum(["24h", "7d"])
+        .default("24h")
+        .describe("Time window to filter tokens: '24h' or '7d'")
+        .optional(),
+    }),
+  },
+  async ({ timeframe = "24h" }) => {
+    const queryId = timeframe === "24h" ? 5073823 : 5138002;
+
+    const response = await duneClient.get(`/v1/query/${queryId}/results`, {
+      params: { limit: 10 },
+    });
+
+    const rows = response.data.result?.rows ?? [];
+
+    return {
+      timeframe,
+      top_tokens: rows,
     };
   }
 );
