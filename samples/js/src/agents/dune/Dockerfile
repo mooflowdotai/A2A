@@ -12,4 +12,4 @@ WORKDIR /app/samples/js
 RUN npm install
 
 # Default entrypoint
-CMD ["npm", "run", "agents:solana"]
+CMD ["npm", "run", "agents:dune"]
