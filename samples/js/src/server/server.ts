@@ -154,6 +154,7 @@ export class A2AServer {
     }
 
     this.connection = options.solanaConnection;
+
     if (options.paymentRecipient)
       this.recipient = new PublicKey(options.paymentRecipient);
     if (options.requiredSolLamports)
@@ -277,7 +278,14 @@ export class A2AServer {
 
         console.log("[/pay] Generated verification token and payload", base64);
 
-        res.json({ signature: base64 });
+        res.json({
+          signature: base64,
+          tx_link: `https://solscan.io/tx/${signature}?cluster=${
+            this.connection.rpcEndpoint.includes("devnet")
+              ? "devnet"
+              : "mainnet"
+          }`,
+        });
       } catch (err) {
         console.error("[/pay] Error during payment handling:", err);
         next(err);
@@ -329,27 +337,31 @@ export class A2AServer {
           return;
         }
 
-        const now = Date.now();
-        const MAX_AGE_MS = 10 * 60 * 1000;
+        // const now = Date.now();
+        // const MAX_AGE_MS = 10 * 60 * 1000;
 
-        if (isNaN(timestamp) || now - timestamp > MAX_AGE_MS) {
-          res.status(402).json({
-            error: "Payment token expired",
-          });
-          return;
-        }
+        // if (isNaN(timestamp) || now - timestamp > MAX_AGE_MS) {
+        //   res.status(402).json({
+        //     error: "Payment token expired",
+        //   });
+        //   return;
+        // }
 
-        const expectedToken = crypto
-          .createHmac("sha256", process.env.PAYMENT_SECRET || "moof-moof")
-          .update(`${signature}:${timestamp}`)
-          .digest("hex");
+        // const expectedToken = crypto
+        //   .createHmac("sha256", process.env.PAYMENT_SECRET || "moof-moof")
+        //   .update(`${signature}:${timestamp}`)
+        //   .digest("hex");
 
-        if (token !== expectedToken) {
-          res.status(402).json({
-            error: "Invalid payment token",
-          });
-          return;
-        }
+        // if (token !== expectedToken) {
+        //   res.status(402).json({
+        //     error: "Invalid payment token",
+        //   });
+        //   return;
+        // }
+
+        res.setHeader("x-payment-signature", signature);
+        res.setHeader("x-payment-token", token);
+        res.setHeader("x-payment-timestamp", timestamp.toString());
       }
 
       // Continue to normal flow...
