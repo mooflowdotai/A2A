@@ -7,6 +7,7 @@ import {
 import { MessageData } from "genkit";
 import { ai } from "./genkit.js";
 import { getBalance, getSlot } from "./tools.js";
+import { clusterApiUrl, Connection } from "@solana/web3.js";
 
 if (!process.env.HEURIST_API_KEY || !process.env.SOLANA_RPC_URL) {
   console.error(
@@ -23,7 +24,6 @@ const solanaPrompt = ai.prompt("solana_agent");
 export async function* solanaAgentHandler(
   context: TaskContext
 ): AsyncGenerator<TaskYieldUpdate> {
-  // Check if there is any message history
   if (!context.history || context.history.length === 0) {
     yield {
       state: "failed",
@@ -55,7 +55,6 @@ export async function* solanaAgentHandler(
     return;
   }
 
-  // Send the messages to the language model and yield the response
   try {
     const response = await solanaPrompt(
       { now: new Date().toISOString() },
@@ -116,6 +115,10 @@ const solanaAgentCard: schema.AgentCard = {
   ],
 };
 
-const server = new A2AServer(solanaAgentHandler, { card: solanaAgentCard });
+const server = new A2AServer(solanaAgentHandler, {
+  card: solanaAgentCard,
+  paymentRecipient: process.env.RECIPIENT_ADDRESS,
+  solanaConnection: new Connection(clusterApiUrl("devnet")),
+});
 server.start();
 console.log("[SolanaAgent] Running at http://localhost:41241");

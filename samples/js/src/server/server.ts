@@ -16,6 +16,17 @@ import {
   isTaskStatusUpdate,
   isArtifactUpdate,
 } from "./utils.js";
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  sendAndConfirmTransaction,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
+import bs58 from "bs58";
+import crypto from "crypto";
+import { createMemoInstruction } from "@solana/spl-memo";
 
 /**
  * Options for configuring the A2AServer.
@@ -29,6 +40,10 @@ export interface A2AServerOptions {
   basePath?: string;
   /** Agent Card for the agent being served. */
   card?: schema.AgentCard;
+  // ✅ New options
+  solanaConnection?: Connection;
+  paymentRecipient?: string;
+  requiredSolLamports?: number;
 }
 
 // Define new TaskContext without the store, based on the original from handler.ts
@@ -45,6 +60,11 @@ export class A2AServer {
   // Track active cancellations
   private activeCancellations: Set<string> = new Set();
   card: schema.AgentCard;
+
+  // ✅ New fields
+  private connection?: Connection;
+  private recipient?: PublicKey;
+  private requiredLamports: number = 1_000_000; // default 0.001 SOL
 
   // Helper to apply updates (status or artifact) immutably
   private applyUpdateToTaskAndHistory(
@@ -132,6 +152,12 @@ export class A2AServer {
     if (this.basePath !== "/") {
       this.basePath = `/${this.basePath.replace(/^\/|\/$/g, "")}/`;
     }
+
+    this.connection = options.solanaConnection;
+    if (options.paymentRecipient)
+      this.recipient = new PublicKey(options.paymentRecipient);
+    if (options.requiredSolLamports)
+      this.requiredLamports = options.requiredSolLamports;
   }
 
   /**
@@ -160,6 +186,8 @@ export class A2AServer {
       res.json(this.card);
     });
 
+    app.post("/pay", this.payHandler());
+
     // Mount the endpoint handler
     app.post(this.basePath, this.endpoint());
 
@@ -176,24 +204,161 @@ export class A2AServer {
     return app;
   }
 
+  payHandler(): RequestHandler {
+    return async (req, res, next) => {
+      try {
+        if (!this.recipient) {
+          console.warn(
+            "[/pay] Payment handler disabled due to missing configuration"
+          );
+          res.status(503).json({ error: "Payment handler not configured" });
+          return;
+        }
+
+        const { privateKey } = req.body;
+
+        if (!privateKey || typeof privateKey !== "string") {
+          console.warn("[/pay] Missing or invalid privateKey in request body");
+          res.status(400).json({ error: "Missing or invalid privateKey" });
+          return;
+        }
+
+        if (!this.connection || !this.recipient) {
+          console.error(
+            "[/pay] Solana connection or recipient is not configured"
+          );
+          res.status(500).json({ error: "Payment not configured" });
+          return;
+        }
+
+        const memoInstruction = createMemoInstruction(
+          `[${this.card.name}] A2A access unlock via solana`
+        );
+
+        const fromKeypair = Keypair.fromSecretKey(bs58.decode(privateKey));
+        const lamportsToSend = this.requiredLamports;
+
+        console.log(
+          `[/pay] Sending ${lamportsToSend} lamports from ${fromKeypair.publicKey.toBase58()} to ${this.recipient.toBase58()}`
+        );
+
+        const transferTransaction = new Transaction().add(
+          SystemProgram.transfer({
+            fromPubkey: fromKeypair.publicKey,
+            toPubkey: this.recipient,
+            lamports: lamportsToSend,
+          }),
+          memoInstruction
+        );
+
+        const signature = await sendAndConfirmTransaction(
+          this.connection,
+          transferTransaction,
+          [fromKeypair]
+        );
+
+        console.log(`[/pay] Payment sent. Transaction signature: ${signature}`);
+
+        const timestamp = Date.now();
+        const raw = `${signature}:${timestamp}`;
+
+        const token = crypto
+          .createHmac("sha256", process.env.PAYMENT_SECRET || "moof-moof")
+          .update(raw)
+          .digest("hex");
+
+        const payload = {
+          token,
+          signature,
+          timestamp,
+        };
+
+        const base64 = Buffer.from(JSON.stringify(payload)).toString("base64");
+
+        console.log("[/pay] Generated verification token and payload", base64);
+
+        res.json({ signature: base64 });
+      } catch (err) {
+        console.error("[/pay] Error during payment handling:", err);
+        next(err);
+      }
+    };
+  }
+
   /**
    * Returns an Express RequestHandler function to handle A2A requests.
    */
   endpoint(): RequestHandler {
     return async (req: Request, res: Response, next: NextFunction) => {
       const requestBody = req.body;
-      let taskId: string | undefined; // For error context
 
+      const paymentHeader = (req.headers["x-payment"] ||
+        req?.params?.headers?.["x-payment"]) as string | undefined;
+
+      if (this.recipient) {
+        if (!paymentHeader) {
+          res.status(402).json({
+            error: "Payment Required: Missing x-payment header",
+          });
+          return;
+        }
+
+        let signature: string, token: string;
+        let timestamp: number;
+
+        try {
+          const decoded = Buffer.from(paymentHeader, "base64").toString(
+            "utf-8"
+          );
+          const payload = JSON.parse(decoded);
+
+          signature = payload.signature;
+          token = payload.token;
+          timestamp = Number(payload.timestamp);
+        } catch (err) {
+          console.log("err", err);
+
+          res.status(400).json({ error: "Invalid x-payment format (base64)" });
+          return;
+        }
+
+        if (!signature || !timestamp || !token) {
+          res.status(402).json({
+            error: "Payment Required: Malformed x-payment format",
+          });
+          return;
+        }
+
+        const now = Date.now();
+        const MAX_AGE_MS = 10 * 60 * 1000;
+
+        if (isNaN(timestamp) || now - timestamp > MAX_AGE_MS) {
+          res.status(402).json({
+            error: "Payment token expired",
+          });
+          return;
+        }
+
+        const expectedToken = crypto
+          .createHmac("sha256", process.env.PAYMENT_SECRET || "moof-moof")
+          .update(`${signature}:${timestamp}`)
+          .digest("hex");
+
+        if (token !== expectedToken) {
+          res.status(402).json({
+            error: "Invalid payment token",
+          });
+          return;
+        }
+      }
+
+      // Continue to normal flow...
+      let taskId: string | undefined;
       try {
-        // 1. Validate basic JSON-RPC structure
         if (!this.isValidJsonRpcRequest(requestBody)) {
           throw A2AError.invalidRequest("Invalid JSON-RPC request structure.");
         }
-        // Attempt to get task ID early for error context. Cast params to any to access id.
-        // Proper validation happens within specific handlers.
         taskId = (requestBody.params as any)?.id;
-
-        // 2. Route based on method
         switch (requestBody.method) {
           case "tasks/send":
             await this.handleTaskSend(
@@ -216,14 +381,12 @@ export class A2AServer {
               res
             );
             break;
-          // Add other methods like tasks/pushNotification/*, tasks/resubscribe later if needed
           default:
             throw A2AError.methodNotFound(requestBody.method);
         }
       } catch (error) {
-        // Forward errors to the Express error handler
         if (error instanceof A2AError && taskId && !error.taskId) {
-          error.taskId = taskId; // Add task ID context if missing
+          error.taskId = taskId;
         }
         next(this.normalizeError(error, requestBody?.id ?? null));
       }

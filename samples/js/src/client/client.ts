@@ -472,10 +472,11 @@ export class A2AClient {
   async setTaskPushNotification(
     params: TaskPushNotificationConfig
   ): Promise<TaskPushNotificationConfig | null> {
-    const httpResponse = await this._makeHttpRequest<SetTaskPushNotificationRequest>(
-      "tasks/pushNotification/set",
-      params
-    );
+    const httpResponse =
+      await this._makeHttpRequest<SetTaskPushNotificationRequest>(
+        "tasks/pushNotification/set",
+        params
+      );
     return this._handleJsonResponse<SetTaskPushNotificationResponse>(
       httpResponse,
       "tasks/pushNotification/set"
@@ -490,10 +491,11 @@ export class A2AClient {
   async getTaskPushNotification(
     params: TaskIdParams
   ): Promise<TaskPushNotificationConfig | null> {
-    const httpResponse = await this._makeHttpRequest<GetTaskPushNotificationRequest>(
-      "tasks/pushNotification/get",
-      params
-    );
+    const httpResponse =
+      await this._makeHttpRequest<GetTaskPushNotificationRequest>(
+        "tasks/pushNotification/get",
+        params
+      );
     return this._handleJsonResponse<GetTaskPushNotificationResponse>(
       httpResponse,
       "tasks/pushNotification/get"
@@ -532,7 +534,9 @@ export class A2AClient {
    * @param capability The capability to check (e.g., 'streaming', 'pushNotifications').
    * @returns A promise resolving to true if the capability is likely supported.
    */
-  async supports(capability: "streaming" | "pushNotifications"): Promise<boolean> {
+  async supports(
+    capability: "streaming" | "pushNotifications"
+  ): Promise<boolean> {
     try {
       const card = await this.agentCard(); // Fetch card if not cached
       switch (capability) {
